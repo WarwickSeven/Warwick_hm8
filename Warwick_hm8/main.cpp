@@ -24,11 +24,12 @@ struct tttGame {
 
 inline void clearScreen()           // не работает
 {
+    cout << endl << endl << endl;
     //cout << "\x1B[2J\x1B[H";
 }
 struct TCoord {
-    size_t x = 0U;
     size_t y = 0U;
+    size_t x = 0U;
 };
 
 int getRandomNum()
@@ -75,24 +76,20 @@ void initGame(tttGame &g)
     cin >> diffChoise;
     switch (diffChoise)
     {
-        case 1:
-            g.difficulty = DUMB;
-            cout << "Your opponent is a Dumb!" << endl << endl;
-            break;
-        case 2:
-            g.difficulty = NORMAL;
-            cout << "Your opponent is Normal." << endl << endl;
-            break;
-        case 3:
-            g.difficulty = NIGHTMARE;
-            cout << "Your opponent is a Nightmare!" << endl << endl;
-            break;
+        case 1: g.difficulty = DUMB; break;
+        case 2: g.difficulty = NORMAL; break;
+        case 3: g.difficulty = NIGHTMARE; break;
     }
 }
 
-
 void printGame(const tttGame &g)
 {
+    switch (g.difficulty)
+    {
+        case DUMB: cout << "Your opponent is a Dumb!" << endl << endl; break;
+        case NORMAL: cout << "Your opponent is Normal." << endl << endl; break;
+        case NIGHTMARE: cout << "Your opponent is a Nightmare!" << endl << endl; break;
+    }
     cout << "    ";
     for (size_t x = 0; x < g.SIZE; x++)
     {
@@ -116,7 +113,7 @@ void deinitGame(tttGame &g)
 {
     for (size_t i = 0; i < g.SIZE; i++)
     {
-        delete[ ] g.ppField[i];
+        delete[] g.ppField[i];
     }
     delete[] g.ppField;
     g.ppField = nullptr;
@@ -205,7 +202,7 @@ void userTurn(const tttGame &g)
     g.ppField[y][x] = g.user;
 }
 
-void aiDumbTurn(tttGame &g)
+TCoord aiDumbTurn(tttGame &g)
 {
     TCoord buf[9];
     size_t num = 0;
@@ -219,81 +216,176 @@ void aiDumbTurn(tttGame &g)
         }
     }
     const size_t index = getRandomNum() % num;
-    TCoord c = buf[index];
-    g.ppField[c.y][c.x] = g.ai;
+    return buf[index];
 }
 
-void aiNormalTurn(tttGame &g)
+TCoord aiNormalTurn(tttGame &g)
 {
+    //центр
     if (g.ppField[1][1] == EMPTY)
     {
-        g.ppField[1][1] = g.ai;
+        return { 1, 1 };
     }
-    else
+    
+    //углы
+    TCoord buf[4];
+    size_t num = 0;
+    if (g.ppField[0][0] == EMPTY)
     {
-        TCoord buf[4];
-        size_t num = 0;
-        if (g.ppField[0][0] == EMPTY)
-        {
-            buf[num] = { 0, 0 };
-            num++;
-        }
-        if (g.ppField[0][2] == EMPTY)
-        {
-            buf[num] = { 0, 2 };
-            num++;
-        }
-        if (g.ppField[2][0] == EMPTY)
-        {
-            buf[num] = { 2, 0 };
-            num++;
-        }
-        if (g.ppField[2][2] == EMPTY)
-        {
-            buf[num] = { 2, 2 };
-            num++;
-        }
-        if (num > 0)
-        {
-            const size_t index = getRandomNum() % num;
-            TCoord c = buf[index];
-            g.ppField[c.y][c.x] = g.ai;
-        }
-        else
-        {
-            if (g.ppField[0][1] == EMPTY)
-            {
-                buf[num] = { 0, 1 };
-                num++;
-            }
-            if (g.ppField[1][0] == EMPTY)
-            {
-                buf[num] = { 1, 0 };
-                num++;
-            }
-            if (g.ppField[1][2] == EMPTY)
-            {
-                buf[num] = { 1, 2 };
-                num++;
-            }
-            if (g.ppField[2][1] == EMPTY)
-            {
-                buf[num] = { 2, 1 };
-                num++;
-            }
-            if (num > 0)
-            {
-                const size_t index = getRandomNum() % num;
-                TCoord c = buf[index];
-                g.ppField[c.y][c.x] = g.ai;
-            }
-        }
+        buf[num] = { 0, 0 };
+        num++;
     }
+    if (g.ppField[0][2] == EMPTY)
+    {
+        buf[num] = { 0, 2 };
+        num++;
+    }
+    if (g.ppField[2][0] == EMPTY)
+    {
+        buf[num] = { 2, 0 };
+        num++;
+    }
+    if (g.ppField[2][2] == EMPTY)
+    {
+        buf[num] = { 2, 2 };
+        num++;
+    }
+    if (num > 0)
+    {
+        const size_t index = getRandomNum() % num;
+        return buf[index];
+    }
+    
+    //не углы
+    if (g.ppField[0][1] == EMPTY)
+    {
+        buf[num] = { 0, 1 };
+        num++;
+    }
+    if (g.ppField[1][0] == EMPTY)
+    {
+        buf[num] = { 1, 0 };
+        num++;
+    }
+    if (g.ppField[1][2] == EMPTY)
+    {
+        buf[num] = { 1, 2 };
+        num++;
+    }
+    if (g.ppField[2][1] == EMPTY)
+    {
+        buf[num] = { 2, 1 };
+        num++;
+    }
+    if (num > 0)
+    {
+        const size_t index = getRandomNum() % num;
+        return buf[index];
+    }
+    return { 5, 5 };
 }
 
-void aiNightmareTurn(tttGame &g)
+TCoord aiNightmareTurn(tttGame &g)
 {
+    for (size_t y = 0; y < g.SIZE; y++)
+    {
+        for (size_t x = 0; x < g.SIZE; x++)
+        {
+            if (g.ppField[y][x] == EMPTY)
+            {
+                g.ppField[y][x] = g.ai;
+                if (getWon(g) == AI_WON)
+                {
+                    g.ppField[y][x] = EMPTY;
+                    return { y, x };
+                }
+                g.ppField[y][x] = EMPTY;
+            }
+        }
+    }
     
+    for (size_t y = 0; y < g.SIZE; y++)
+    {
+        for (size_t x = 0; x < g.SIZE; x++)
+        {
+            if (g.ppField[y][x] == EMPTY)
+            {
+                g.ppField[y][x] = g.user;
+                if (getWon(g) == USER_WON)
+                {
+                    g.ppField[y][x] = EMPTY;
+                    return { y, x };
+                }
+                g.ppField[y][x] = EMPTY;
+            }
+        }
+    }
+    
+    //центр
+    
+    if (g.ppField[1][1] == EMPTY)
+    {
+        return { 1, 1 };
+    }
+    
+    //углы
+    
+    TCoord buf[4];
+    size_t num = 0;
+    if (g.ppField[0][0] == EMPTY)
+    {
+        buf[num] = { 0, 0 };
+        num++;
+    }
+    if (g.ppField[0][2] == EMPTY)
+    {
+        buf[num] = { 0, 2 };
+        num++;
+    }
+    if (g.ppField[2][0] == EMPTY)
+    {
+        buf[num] = { 2, 0 };
+        num++;
+    }
+    if (g.ppField[2][2] == EMPTY)
+    {
+        buf[num] = { 2, 2 };
+        num++;
+    }
+    if (num > 0)
+    {
+        const size_t index = getRandomNum() % num;
+        return buf[index];
+    }
+    
+    //не углы
+    
+    if (g.ppField[0][1] == EMPTY)
+    {
+        buf[num] = { 0, 1 };
+        num++;
+    }
+    if (g.ppField[1][0] == EMPTY)
+    {
+        buf[num] = { 1, 0 };
+        num++;
+    }
+    if (g.ppField[1][2] == EMPTY)
+    {
+        buf[num] = { 1, 2 };
+        num++;
+    }
+    if (g.ppField[2][1] == EMPTY)
+    {
+        buf[num] = { 2, 1 };
+        num++;
+    }
+    if (num > 0)
+    {
+        const size_t index = getRandomNum() % num;
+        return buf[index];
+    }
+    return { 5, 5 };
 }
 
 //======================================================================================================
@@ -313,9 +405,24 @@ int main()
         {
             switch (g.difficulty)
             {
-                case DUMB: aiDumbTurn(g); break;
-                case NORMAL: aiNormalTurn(g); break;
-                case NIGHTMARE: aiNightmareTurn(g); break;
+                case DUMB:
+                {
+                    TCoord c = aiDumbTurn(g);
+                    g.ppField[c.y][c.x] = g.ai;
+                    break;
+                }
+                case NORMAL:
+                {
+                    TCoord c = aiNormalTurn(g);
+                    g.ppField[c.y][c.x] = g.ai;
+                    break;
+                }
+                case NIGHTMARE:
+                {
+                    TCoord c = aiNightmareTurn(g);
+                    g.ppField[c.y][c.x] = g.ai;
+                    break;
+                }
             }
         }
         clearScreen();

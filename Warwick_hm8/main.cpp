@@ -283,7 +283,7 @@ TCoord aiNormalTurn(tttGame &g)
         const size_t index = getRandomNum() % num;
         return buf[index];
     }
-    return { 5, 5 };
+    //return { 5, 5 }; без этого заведомо ложного ретурна Xcode не компилирует проект. 
 }
 
 TCoord aiNightmareTurn(tttGame &g)
@@ -386,7 +386,7 @@ TCoord aiNightmareTurn(tttGame &g)
         const size_t index = getRandomNum() % num;
         return buf[index];
     }
-    return { 5, 5 };
+    //return { 5, 5 }; без этого заведомо ложного ретурна Xcode не компилирует проект.
 }
 
 //======================================================================================================

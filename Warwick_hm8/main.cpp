@@ -22,10 +22,9 @@ struct tttGame {
 };
 #pragma pack (pop)
 
-inline void clearScreen()           // не работает
+inline void clearScreen()           // не работает в Xcode
 {
-    cout << endl << endl << endl;
-    //cout << "\x1B[2J\x1B[H";
+    cout << "\x1B[2J\x1B[H";
 }
 struct TCoord {
     size_t y = 0U;
@@ -211,8 +210,10 @@ TCoord aiDumbTurn(tttGame &g)
         for (size_t x = 0; x < g.SIZE; x++)
         {
             if (g.ppField[y][x] == EMPTY)
-            buf[num] = { y, x };
-            num++;
+            {
+                buf[num] = { y, x };
+                num++;
+            }
         }
     }
     const size_t index = getRandomNum() % num;
